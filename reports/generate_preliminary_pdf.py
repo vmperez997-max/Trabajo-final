@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from io import BytesIO
 from html import escape
 from pathlib import Path
 
+from PIL import Image as PILImage
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.lib.pagesizes import letter
@@ -11,6 +13,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import (
     PageBreak,
+    Image as RLImage,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -23,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "pdf" / "resultados_preliminares.pdf"
 METRICS = ROOT / "output" / "results" / "metrics.json"
 GITHUB = "https://github.com/vmperez997-max/Trabajo-final"
+REFERENCE_IMAGE = Path(r"C:\Users\Victor\AppData\Roaming\Code\agentSessionData\e7f9c257-a535-4d79-bf33-4e8aa689e087\attachments\6a36ac75-ff6e-4dd4-ab41-a7f83a0071e2\Pasted Image.png")
 
 NAVY = colors.HexColor("#163A5F")
 BLUE = colors.HexColor("#2F6690")
@@ -46,6 +50,18 @@ def p(text: str, style: ParagraphStyle) -> Paragraph:
     return Paragraph(text, style)
 
 
+def reference_logo() -> RLImage | Spacer:
+    """Recorta el logotipo de la imagen proporcionada como referencia visual."""
+    if not REFERENCE_IMAGE.exists():
+        return Spacer(1, 0.8 * inch)
+    with PILImage.open(REFERENCE_IMAGE) as source:
+        logo = source.crop((135, 20, 270, 165))
+        buffer = BytesIO()
+        logo.save(buffer, format="PNG")
+    buffer.seek(0)
+    return RLImage(buffer, width=1.22 * inch, height=1.31 * inch)
+
+
 def build_pdf() -> Path:
     metrics = json.loads(METRICS.read_text(encoding="utf-8"))
     baseline = metrics["models"]["baseline_centroid"]
@@ -55,6 +71,8 @@ def build_pdf() -> Path:
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name="CoverTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=25, leading=31, textColor=colors.white, alignment=TA_CENTER, spaceAfter=18))
     styles.add(ParagraphStyle(name="CoverSub", parent=styles["Normal"], fontSize=13, leading=18, textColor=colors.white, alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name="CoverBlack", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=13, leading=15, textColor=colors.black, alignment=TA_CENTER, spaceAfter=2))
+    styles.add(ParagraphStyle(name="CoverSmallBlack", parent=styles["Normal"], fontName="Helvetica", fontSize=8.5, leading=10, textColor=colors.black, alignment=TA_CENTER, spaceAfter=1))
     styles.add(ParagraphStyle(name="Section", parent=styles["Heading1"], fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=NAVY, spaceBefore=8, spaceAfter=9))
     styles.add(ParagraphStyle(name="Subsection", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=11, leading=14, textColor=BLUE, spaceBefore=7, spaceAfter=5))
     styles.add(ParagraphStyle(name="BodyJust", parent=styles["BodyText"], fontName="Helvetica", fontSize=9.5, leading=14, alignment=TA_JUSTIFY, spaceAfter=7))
@@ -64,25 +82,29 @@ def build_pdf() -> Path:
     document = SimpleDocTemplate(str(OUTPUT), pagesize=letter, rightMargin=0.72 * inch, leftMargin=0.72 * inch, topMargin=0.72 * inch, bottomMargin=0.78 * inch)
     story = []
 
-    # Portada formal inspirada en la jerarquía académica de los documentos de referencia.
+    # Portada centrada inspirada en la presentación visual de la referencia.
     story.extend([
-        Spacer(1, 0.55 * inch),
-        Table([[p("UNIVERSIDAD AUTÓNOMA DE SANTO DOMINGO", styles["CoverSub"])]], colWidths=[6.9 * inch], style=TableStyle([("BACKGROUND", (0, 0), (-1, -1), NAVY), ("LEFTPADDING", (0, 0), (-1, -1), 18), ("RIGHTPADDING", (0, 0), (-1, -1), 18), ("TOPPADDING", (0, 0), (-1, -1), 13), ("BOTTOMPADDING", (0, 0), (-1, -1), 13)])),
-        Spacer(1, 0.75 * inch),
-        p("INF-8239 Ciencia de Datos II", styles["Heading2"]),
+        Spacer(1, 0.18 * inch),
+        reference_logo(),
+        Spacer(1, 0.08 * inch),
+        p("Universidad Autónoma de Santo Domingo", styles["CoverBlack"]),
+        p("UASD", styles["CoverBlack"]),
+        p("Facultad de Ciencias - Escuela de Informática", styles["CoverSmallBlack"]),
+        p("División de Postgrado y Educación Permanente", styles["CoverSmallBlack"]),
+        Spacer(1, 0.18 * inch),
+        p("INF-8239 Ciencia de Datos II", styles["CoverBlack"]),
+        p("Trabajo final - Modalidad A", styles["CoverBlack"]),
+        Spacer(1, 0.18 * inch),
+        p("Dígitos manuscritos robustos", styles["CoverBlack"]),
+        p("Visión por computadora", styles["CoverSmallBlack"]),
+        Spacer(1, 0.2 * inch),
+        p("Presentado por:", styles["CoverSmallBlack"]),
+        p("Victor Manuel Perez Padilla", styles["CoverSmallBlack"]),
+        p("Matrícula: 100801946", styles["CoverSmallBlack"]),
         Spacer(1, 0.15 * inch),
-        p("Trabajo final", styles["CoverTitle"]),
-        Table([[p("DÍGITOS MANUSCRITOS ROBUSTOS", styles["CoverTitle"])]], colWidths=[6.9 * inch], style=TableStyle([("BACKGROUND", (0, 0), (-1, -1), BLUE), ("LEFTPADDING", (0, 0), (-1, -1), 18), ("RIGHTPADDING", (0, 0), (-1, -1), 18), ("TOPPADDING", (0, 0), (-1, -1), 16), ("BOTTOMPADDING", (0, 0), (-1, -1), 16)])),
-        Spacer(1, 0.35 * inch),
-        p("Modalidad A - Proyecto aplicado de ciencia de datos", styles["CoverSub"]),
-        Spacer(1, 0.7 * inch),
-        p("Autor: Victor Manuel Perez Padilla", styles["BodyJust"]),
-        p("Matrícula: 100801946", styles["BodyJust"]),
-        p("Código del tema: TF.19", styles["BodyJust"]),
-        p("Área: Visión por computadora", styles["BodyJust"]),
-        Spacer(1, 0.6 * inch),
-        p("Santo Domingo, República Dominicana", styles["BodyJust"]),
-        p("Versión reproducible v0.1.0", styles["Small"]),
+        p("Tema: TF.19", styles["CoverSmallBlack"]),
+        p("Santo Domingo, República Dominicana", styles["CoverSmallBlack"]),
+        p("Octubre de 2026", styles["CoverSmallBlack"]),
         PageBreak(),
     ])
 
