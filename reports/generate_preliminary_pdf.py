@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PIL import Image as PILImage
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
@@ -34,15 +34,11 @@ LIGHT_BLUE = colors.HexColor("#F2F2F2")
 GRAY = colors.HexColor("#333333")
 
 
-def footer(canvas, document) -> None:
+def apa_header(canvas, document) -> None:
     canvas.saveState()
-    if document.page > 1:
-        canvas.setStrokeColor(colors.HexColor("#D6DEE5"))
-        canvas.line(document.leftMargin, 0.58 * inch, letter[0] - document.rightMargin, 0.58 * inch)
-        canvas.setFont("Times-Roman", 9)
-        canvas.setFillColor(GRAY)
-        canvas.drawString(document.leftMargin, 0.38 * inch, "INF-8239 | Dígitos manuscritos robustos")
-        canvas.drawRightString(letter[0] - document.rightMargin, 0.38 * inch, f"Página {document.page}")
+    canvas.setFont("Times-Roman", 12)
+    canvas.setFillColor(colors.black)
+    canvas.drawRightString(letter[0] - inch, letter[1] - 0.5 * inch, str(document.page))
     canvas.restoreState()
 
 
@@ -69,17 +65,21 @@ def build_pdf() -> Path:
     meta = metrics["metadata"]
 
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name="CoverTitle", parent=styles["Title"], fontName="Times-Bold", fontSize=20, leading=24, textColor=colors.black, alignment=TA_CENTER, spaceAfter=12))
-    styles.add(ParagraphStyle(name="CoverSub", parent=styles["Normal"], fontName="Times-Roman", fontSize=12, leading=16, textColor=colors.black, alignment=TA_CENTER))
-    styles.add(ParagraphStyle(name="CoverBlack", parent=styles["Normal"], fontName="Times-Bold", fontSize=13, leading=15, textColor=colors.black, alignment=TA_CENTER, spaceAfter=2))
-    styles.add(ParagraphStyle(name="CoverSmallBlack", parent=styles["Normal"], fontName="Times-Roman", fontSize=9, leading=11, textColor=colors.black, alignment=TA_CENTER, spaceAfter=1))
-    styles.add(ParagraphStyle(name="Section", parent=styles["Heading1"], fontName="Times-Bold", fontSize=14, leading=18, textColor=NAVY, spaceBefore=8, spaceAfter=9))
-    styles.add(ParagraphStyle(name="Subsection", parent=styles["Heading2"], fontName="Times-Bold", fontSize=12, leading=14, textColor=BLUE, spaceBefore=7, spaceAfter=5))
-    styles.add(ParagraphStyle(name="BodyJust", parent=styles["BodyText"], fontName="Times-Roman", fontSize=11, leading=16, alignment=TA_JUSTIFY, spaceAfter=8))
-    styles.add(ParagraphStyle(name="Small", parent=styles["BodyText"], fontName="Times-Roman", fontSize=9.5, leading=12, textColor=GRAY))
-    styles.add(ParagraphStyle(name="Callout", parent=styles["BodyText"], fontName="Times-Roman", fontSize=11, leading=16, textColor=colors.black, backColor=colors.white, borderColor=colors.white, borderWidth=0, borderPadding=0, spaceBefore=5, spaceAfter=10))
+    styles.add(ParagraphStyle(name="CoverTitle", parent=styles["Title"], fontName="Times-Bold", fontSize=12, leading=24, textColor=colors.black, alignment=TA_CENTER, spaceAfter=12))
+    styles.add(ParagraphStyle(name="CoverSub", parent=styles["Normal"], fontName="Times-Roman", fontSize=12, leading=24, textColor=colors.black, alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name="CoverBlack", parent=styles["Normal"], fontName="Times-Bold", fontSize=12, leading=24, textColor=colors.black, alignment=TA_CENTER, spaceAfter=0))
+    styles.add(ParagraphStyle(name="CoverSmallBlack", parent=styles["Normal"], fontName="Times-Roman", fontSize=12, leading=24, textColor=colors.black, alignment=TA_CENTER, spaceAfter=0))
+    styles.add(ParagraphStyle(name="Section", parent=styles["Heading1"], fontName="Times-Bold", fontSize=12, leading=24, textColor=colors.black, alignment=TA_CENTER, spaceBefore=12, spaceAfter=0, keepWithNext=True))
+    styles.add(ParagraphStyle(name="Subsection", parent=styles["Heading2"], fontName="Times-Bold", fontSize=12, leading=24, textColor=colors.black, alignment=TA_LEFT, spaceBefore=0, spaceAfter=0, keepWithNext=True))
+    styles.add(ParagraphStyle(name="BodyJust", parent=styles["BodyText"], fontName="Times-Roman", fontSize=12, leading=24, alignment=TA_LEFT, firstLineIndent=0.5 * inch, spaceAfter=0))
+    styles.add(ParagraphStyle(name="Abstract", parent=styles["BodyText"], fontName="Times-Roman", fontSize=12, leading=24, alignment=TA_LEFT, firstLineIndent=0, spaceAfter=0))
+    styles.add(ParagraphStyle(name="Keywords", parent=styles["BodyText"], fontName="Times-Roman", fontSize=12, leading=24, alignment=TA_LEFT, firstLineIndent=0.5 * inch, spaceBefore=12, spaceAfter=0))
+    styles.add(ParagraphStyle(name="Small", parent=styles["BodyText"], fontName="Times-Roman", fontSize=12, leading=24, alignment=TA_LEFT, textColor=colors.black, leftIndent=0.5 * inch, firstLineIndent=-0.5 * inch, spaceAfter=0))
+    styles.add(ParagraphStyle(name="Callout", parent=styles["BodyText"], fontName="Times-Roman", fontSize=12, leading=24, alignment=TA_LEFT, firstLineIndent=0.5 * inch, textColor=colors.black, backColor=colors.white, borderColor=colors.white, borderWidth=0, borderPadding=0, spaceBefore=0, spaceAfter=0))
+    styles.add(ParagraphStyle(name="TableNumber", parent=styles["BodyText"], fontName="Times-Bold", fontSize=12, leading=24, alignment=TA_LEFT, spaceBefore=12, spaceAfter=0))
+    styles.add(ParagraphStyle(name="TableTitle", parent=styles["BodyText"], fontName="Times-Italic", fontSize=12, leading=24, alignment=TA_LEFT, spaceAfter=6))
 
-    document = SimpleDocTemplate(str(OUTPUT), pagesize=letter, rightMargin=0.72 * inch, leftMargin=0.72 * inch, topMargin=0.72 * inch, bottomMargin=0.78 * inch)
+    document = SimpleDocTemplate(str(OUTPUT), pagesize=letter, rightMargin=inch, leftMargin=inch, topMargin=inch, bottomMargin=inch)
     story = []
 
     # Portada centrada inspirada en la presentación visual de la referencia.
@@ -110,11 +110,11 @@ def build_pdf() -> Path:
 
     story.extend([
         p("Resumen", styles["Section"]),
-        p("Este proyecto compara un baseline de centroides con una CNN pequeña para clasificar dígitos manuscritos de MNIST y estudiar el efecto de ruido gaussiano, rotación y su combinación. La CNN obtuvo 98.17% de accuracy en imágenes limpias y 94.84% bajo la combinación de perturbaciones, frente a 82.03% y 71.55% del baseline, respectivamente. La conclusión accionable es usar la CNN dentro del dominio evaluado, manteniendo la advertencia de que MNIST no representa por sí solo documentos manuscritos reales.", styles["BodyJust"]),
+        p("Este proyecto compara un baseline de centroides con una CNN pequeña para clasificar dígitos manuscritos de MNIST y estudiar el efecto de ruido gaussiano, rotación y su combinación. La CNN obtuvo 98.17% de accuracy en imágenes limpias y 94.84% bajo la combinación de perturbaciones, frente a 82.03% y 71.55% del baseline, respectivamente. La conclusión accionable es usar la CNN dentro del dominio evaluado, manteniendo la advertencia de que MNIST no representa por sí solo documentos manuscritos reales.", styles["Abstract"]),
         p("Contenido del informe", styles["Section"]),
           Table([["1. Introducción y problema", "3"], ["2. Objetivos", "3"], ["3. Datos y preparación", "4"], ["4. Metodología e implementación", "4"], ["5. Resultados", "5"], ["6. Limitaciones y uso responsable", "6"], ["7. Conclusiones", "6"]], colWidths=[5.8 * inch, 0.6 * inch], style=TableStyle([("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#999999")), ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BLUE), ("ALIGN", (1, 0), (1, -1), "RIGHT"), ("FONTNAME", (0, 0), (-1, -1), "Times-Roman"), ("FONTSIZE", (0, 0), (-1, -1), 10), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7F7F7")])])),
         Spacer(1, 12),
-        p("Palabras clave: visión por computadora, MNIST, CNN, robustez, ruido, rotación, reproducibilidad.", styles["Small"]),
+        p("Palabras clave: visión por computadora, MNIST, CNN, robustez, ruido, rotación, reproducibilidad.", styles["Keywords"]),
         PageBreak(),
     ])
 
@@ -142,13 +142,14 @@ def build_pdf() -> Path:
     ])
     result_rows = [["Modelo", "Limpio", "Ruido", "Rotación", "Ruido + rotación", "ms/muestra"], ["Baseline centroides", f"{baseline['clean']:.2%}", f"{baseline['gaussian_noise']:.2%}", f"{baseline['rotation']:.2%}", f"{baseline['noise_and_rotation']:.2%}", f"{baseline['latency_ms_per_sample']:.3f}"], ["CNN pequeña", f"{cnn['clean']:.2%}", f"{cnn['gaussian_noise']:.2%}", f"{cnn['rotation']:.2%}", f"{cnn['noise_and_rotation']:.2%}", f"{cnn['latency_ms_per_sample']:.3f}"]]
     story.extend([
-          Table(result_rows, colWidths=[1.35 * inch, 0.72 * inch, 0.72 * inch, 0.72 * inch, 1.05 * inch, 0.85 * inch], style=TableStyle([("BACKGROUND", (0, 0), (-1, 0), LIGHT_BLUE), ("TEXTCOLOR", (0, 0), (-1, 0), colors.black), ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#999999")), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7F7F7")]), ("ALIGN", (1, 1), (-1, -1), "RIGHT"), ("FONTNAME", (0, 0), (-1, -1), "Times-Roman"), ("FONTNAME", (0, 0), (-1, 0), "Times-Bold"), ("FONTSIZE", (0, 0), (-1, -1), 9)])),
+        p("Tabla 1", styles["TableNumber"]),
+        p("Exactitud y latencia por escenario de evaluación", styles["TableTitle"]),
+          Table(result_rows, colWidths=[1.35 * inch, 0.72 * inch, 0.72 * inch, 0.72 * inch, 1.05 * inch, 0.85 * inch], style=TableStyle([("LINEABOVE", (0, 0), (-1, 0), 0.75, colors.black), ("LINEBELOW", (0, 0), (-1, 0), 0.5, colors.black), ("LINEBELOW", (0, -1), (-1, -1), 0.75, colors.black), ("ALIGN", (1, 1), (-1, -1), "RIGHT"), ("FONTNAME", (0, 0), (-1, -1), "Times-Roman"), ("FONTNAME", (0, 0), (-1, 0), "Times-Bold"), ("FONTSIZE", (0, 0), (-1, -1), 10), ("LEFTPADDING", (0, 0), (-1, -1), 4), ("RIGHTPADDING", (0, 0), (-1, -1), 4)])),
         Spacer(1, 10),
         p("La CNN mejora 15.14 puntos porcentuales sobre el baseline en limpio y 23.29 puntos en la combinación de ruido y rotación. Su caída desde limpio es de 3.33 puntos, mientras que la del baseline es de 10.48 puntos. Esto aporta evidencia a favor de la CNN dentro de los escenarios evaluados, sin justificar generalización fuera de ellos.", styles["Callout"]),
         p("6. Pruebas y reproducibilidad", styles["Section"]),
         p("La suite automatizada contiene seis pruebas aprobadas: contrato de imágenes y etiquetas, rechazo de formas incorrectas, reproducibilidad y rango del ruido, preservación de forma en rotación, reporte de escenarios y medición de latencia. El enlace del repositorio es:", styles["BodyJust"]),
         p(escape(GITHUB), styles["Small"]),
-        PageBreak(),
     ])
 
     story.extend([
@@ -168,7 +169,7 @@ def build_pdf() -> Path:
     ])
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    document.build(story, onFirstPage=footer, onLaterPages=footer)
+    document.build(story, onFirstPage=apa_header, onLaterPages=apa_header)
     return OUTPUT
 
 
