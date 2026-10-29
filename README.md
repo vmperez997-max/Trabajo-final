@@ -13,6 +13,7 @@ Proyecto final individual de INF-8239 Ciencia de Datos II, modalidad A.
 - Evaluación: accuracy en datos limpios, robustez ante perturbaciones y latencia de inferencia.
 - Pruebas: seis pruebas automatizadas de contrato, reproducibilidad y comportamiento.
 - Producto: código ejecutable, resultados trazables, informe técnico y demostración.
+- Documentación responsable: `docs/model_card.md` y `docs/declaracion_ia.md`.
 
 Los PDF ubicados en la carpeta raíz son únicamente material de referencia metodológica. No forman parte de los datos, código, resultados ni fuentes del experimento.
 
