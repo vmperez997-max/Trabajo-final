@@ -149,7 +149,7 @@ def build_pdf() -> Path:
         p("La CNN mejora 15.14 puntos porcentuales sobre el baseline en limpio y 23.29 puntos en la combinación de ruido y rotación. Su caída desde limpio es de 3.33 puntos, mientras que la del baseline es de 10.48 puntos. Esto aporta evidencia a favor de la CNN dentro de los escenarios evaluados, sin justificar generalización fuera de ellos.", styles["Callout"]),
         p("6. Pruebas y reproducibilidad", styles["Section"]),
         p("La suite automatizada contiene seis pruebas aprobadas: contrato de imágenes y etiquetas, rechazo de formas incorrectas, reproducibilidad y rango del ruido, preservación de forma en rotación, reporte de escenarios y medición de latencia. El enlace del repositorio es:", styles["BodyJust"]),
-        p(escape(GITHUB), styles["Small"]),
+        p(f'<link href="{GITHUB}" color="blue">{escape(GITHUB)}</link>', styles["Small"]),
     ])
 
     story.extend([
@@ -165,7 +165,7 @@ def build_pdf() -> Path:
         p("Referencias", styles["Section"]),
         p("Yann LeCun, Corinna Cortes y Christopher Burges. MNIST handwritten digit database. http://yann.lecun.com/exdb/mnist/", styles["Small"]),
         p("TensorFlow Keras. MNIST dataset API. https://www.tensorflow.org/api_docs/python/tf/keras/datasets/mnist", styles["Small"]),
-        p("Repositorio del proyecto. " + escape(GITHUB), styles["Small"]),
+        p("Repositorio del proyecto. " + f'<link href="{GITHUB}" color="blue">{escape(GITHUB)}</link>', styles["Small"]),
     ])
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
