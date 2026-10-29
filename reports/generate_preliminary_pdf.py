@@ -81,6 +81,11 @@ def build_pdf() -> Path:
             ),
             Spacer(1, 18),
             Paragraph(
+                "Repositorio GitHub: https://github.com/vmperez997-max/Trabajo-final",
+                styles["Small"],
+            ),
+            Spacer(1, 8),
+            Paragraph(
                 "Generado automáticamente desde la base reproducible del proyecto.",
                 styles["Small"],
             ),
