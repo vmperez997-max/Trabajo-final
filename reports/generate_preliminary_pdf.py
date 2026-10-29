@@ -69,8 +69,8 @@ def build_pdf() -> Path:
     meta = metrics["metadata"]
 
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name="CoverTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=25, leading=31, textColor=colors.white, alignment=TA_CENTER, spaceAfter=18))
-    styles.add(ParagraphStyle(name="CoverSub", parent=styles["Normal"], fontSize=13, leading=18, textColor=colors.white, alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name="CoverTitle", parent=styles["Title"], fontName="Times-Bold", fontSize=20, leading=24, textColor=colors.black, alignment=TA_CENTER, spaceAfter=12))
+    styles.add(ParagraphStyle(name="CoverSub", parent=styles["Normal"], fontName="Times-Roman", fontSize=12, leading=16, textColor=colors.black, alignment=TA_CENTER))
     styles.add(ParagraphStyle(name="CoverBlack", parent=styles["Normal"], fontName="Times-Bold", fontSize=13, leading=15, textColor=colors.black, alignment=TA_CENTER, spaceAfter=2))
     styles.add(ParagraphStyle(name="CoverSmallBlack", parent=styles["Normal"], fontName="Times-Roman", fontSize=9, leading=11, textColor=colors.black, alignment=TA_CENTER, spaceAfter=1))
     styles.add(ParagraphStyle(name="Section", parent=styles["Heading1"], fontName="Times-Bold", fontSize=14, leading=18, textColor=NAVY, spaceBefore=8, spaceAfter=9))
@@ -112,7 +112,7 @@ def build_pdf() -> Path:
         p("Resumen", styles["Section"]),
         p("Este proyecto compara un baseline de centroides con una CNN pequeña para clasificar dígitos manuscritos de MNIST y estudiar el efecto de ruido gaussiano, rotación y su combinación. La CNN obtuvo 98.17% de accuracy en imágenes limpias y 94.84% bajo la combinación de perturbaciones, frente a 82.03% y 71.55% del baseline, respectivamente. La conclusión accionable es usar la CNN dentro del dominio evaluado, manteniendo la advertencia de que MNIST no representa por sí solo documentos manuscritos reales.", styles["BodyJust"]),
         p("Contenido del informe", styles["Section"]),
-        Table([["1. Introducción y problema", "3"], ["2. Objetivos", "3"], ["3. Datos y preparación", "4"], ["4. Metodología e implementación", "4"], ["5. Resultados", "5"], ["6. Limitaciones y uso responsable", "6"], ["7. Conclusiones", "6"]], colWidths=[5.8 * inch, 0.6 * inch], style=TableStyle([("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#C8D2DC")), ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BLUE), ("ALIGN", (1, 0), (1, -1), "RIGHT"), ("FONTNAME", (0, 0), (-1, -1), "Helvetica"), ("FONTSIZE", (0, 0), (-1, -1), 9), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7F9FB")])])),
+          Table([["1. Introducción y problema", "3"], ["2. Objetivos", "3"], ["3. Datos y preparación", "4"], ["4. Metodología e implementación", "4"], ["5. Resultados", "5"], ["6. Limitaciones y uso responsable", "6"], ["7. Conclusiones", "6"]], colWidths=[5.8 * inch, 0.6 * inch], style=TableStyle([("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#999999")), ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BLUE), ("ALIGN", (1, 0), (1, -1), "RIGHT"), ("FONTNAME", (0, 0), (-1, -1), "Times-Roman"), ("FONTSIZE", (0, 0), (-1, -1), 10), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7F7F7")])])),
         Spacer(1, 12),
         p("Palabras clave: visión por computadora, MNIST, CNN, robustez, ruido, rotación, reproducibilidad.", styles["Small"]),
         PageBreak(),
@@ -142,7 +142,7 @@ def build_pdf() -> Path:
     ])
     result_rows = [["Modelo", "Limpio", "Ruido", "Rotación", "Ruido + rotación", "ms/muestra"], ["Baseline centroides", f"{baseline['clean']:.2%}", f"{baseline['gaussian_noise']:.2%}", f"{baseline['rotation']:.2%}", f"{baseline['noise_and_rotation']:.2%}", f"{baseline['latency_ms_per_sample']:.3f}"], ["CNN pequeña", f"{cnn['clean']:.2%}", f"{cnn['gaussian_noise']:.2%}", f"{cnn['rotation']:.2%}", f"{cnn['noise_and_rotation']:.2%}", f"{cnn['latency_ms_per_sample']:.3f}"]]
     story.extend([
-        Table(result_rows, colWidths=[1.35 * inch, 0.72 * inch, 0.72 * inch, 0.72 * inch, 1.05 * inch, 0.85 * inch], style=TableStyle([("BACKGROUND", (0, 0), (-1, 0), NAVY), ("TEXTCOLOR", (0, 0), (-1, 0), colors.white), ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#B9C7D3")), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, LIGHT_BLUE]), ("ALIGN", (1, 1), (-1, -1), "RIGHT"), ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"), ("FONTSIZE", (0, 0), (-1, -1), 8)])),
+          Table(result_rows, colWidths=[1.35 * inch, 0.72 * inch, 0.72 * inch, 0.72 * inch, 1.05 * inch, 0.85 * inch], style=TableStyle([("BACKGROUND", (0, 0), (-1, 0), LIGHT_BLUE), ("TEXTCOLOR", (0, 0), (-1, 0), colors.black), ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#999999")), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7F7F7")]), ("ALIGN", (1, 1), (-1, -1), "RIGHT"), ("FONTNAME", (0, 0), (-1, -1), "Times-Roman"), ("FONTNAME", (0, 0), (-1, 0), "Times-Bold"), ("FONTSIZE", (0, 0), (-1, -1), 9)])),
         Spacer(1, 10),
         p("La CNN mejora 15.14 puntos porcentuales sobre el baseline en limpio y 23.29 puntos en la combinación de ruido y rotación. Su caída desde limpio es de 3.33 puntos, mientras que la del baseline es de 10.48 puntos. Esto aporta evidencia a favor de la CNN dentro de los escenarios evaluados, sin justificar generalización fuera de ellos.", styles["Callout"]),
         p("6. Pruebas y reproducibilidad", styles["Section"]),
