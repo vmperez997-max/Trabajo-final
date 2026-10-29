@@ -1,101 +1,151 @@
-from pathlib import Path
+from __future__ import annotations
+
 import json
+from html import escape
+from pathlib import Path
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import (
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "pdf" / "resultados_preliminares.pdf"
 METRICS = ROOT / "output" / "results" / "metrics.json"
+GITHUB = "https://github.com/vmperez997-max/Trabajo-final"
+
+NAVY = colors.HexColor("#163A5F")
+BLUE = colors.HexColor("#2F6690")
+LIGHT_BLUE = colors.HexColor("#EAF2F8")
+GRAY = colors.HexColor("#5B6573")
+
+
+def footer(canvas, document) -> None:
+    canvas.saveState()
+    if document.page > 1:
+        canvas.setStrokeColor(colors.HexColor("#D6DEE5"))
+        canvas.line(document.leftMargin, 0.58 * inch, letter[0] - document.rightMargin, 0.58 * inch)
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(GRAY)
+        canvas.drawString(document.leftMargin, 0.38 * inch, "INF-8239 | Dígitos manuscritos robustos")
+        canvas.drawRightString(letter[0] - document.rightMargin, 0.38 * inch, f"Página {document.page}")
+    canvas.restoreState()
+
+
+def p(text: str, style: ParagraphStyle) -> Paragraph:
+    return Paragraph(text, style)
 
 
 def build_pdf() -> Path:
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    metrics = json.loads(METRICS.read_text(encoding="utf-8")) if METRICS.exists() else None
+    metrics = json.loads(METRICS.read_text(encoding="utf-8"))
+    baseline = metrics["models"]["baseline_centroid"]
+    cnn = metrics["models"]["cnn_small"]
+    meta = metrics["metadata"]
+
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name="TitleCenter", parent=styles["Title"], alignment=TA_CENTER))
-    styles.add(ParagraphStyle(name="Small", parent=styles["BodyText"], fontSize=9, leading=12))
-    document = SimpleDocTemplate(
-        str(OUTPUT), pagesize=letter, rightMargin=0.65 * inch, leftMargin=0.65 * inch
-    )
-    story = [
-        Paragraph("Dígitos manuscritos robustos", styles["TitleCenter"]),
-        Paragraph("Resultados experimentales - INF-8239 Ciencia de Datos II", styles["Heading2"]),
+    styles.add(ParagraphStyle(name="CoverTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=25, leading=31, textColor=colors.white, alignment=TA_CENTER, spaceAfter=18))
+    styles.add(ParagraphStyle(name="CoverSub", parent=styles["Normal"], fontSize=13, leading=18, textColor=colors.white, alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name="Section", parent=styles["Heading1"], fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=NAVY, spaceBefore=8, spaceAfter=9))
+    styles.add(ParagraphStyle(name="Subsection", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=11, leading=14, textColor=BLUE, spaceBefore=7, spaceAfter=5))
+    styles.add(ParagraphStyle(name="BodyJust", parent=styles["BodyText"], fontName="Helvetica", fontSize=9.5, leading=14, alignment=TA_JUSTIFY, spaceAfter=7))
+    styles.add(ParagraphStyle(name="Small", parent=styles["BodyText"], fontSize=8.5, leading=11, textColor=GRAY))
+    styles.add(ParagraphStyle(name="Callout", parent=styles["BodyText"], fontSize=10, leading=14, textColor=NAVY, backColor=LIGHT_BLUE, borderColor=colors.HexColor("#B7D1E5"), borderWidth=0.5, borderPadding=9, spaceBefore=5, spaceAfter=10))
+
+    document = SimpleDocTemplate(str(OUTPUT), pagesize=letter, rightMargin=0.72 * inch, leftMargin=0.72 * inch, topMargin=0.72 * inch, bottomMargin=0.78 * inch)
+    story = []
+
+    # Portada formal inspirada en la jerarquía académica de los documentos de referencia.
+    story.extend([
+        Spacer(1, 0.55 * inch),
+        Table([[p("UNIVERSIDAD AUTÓNOMA DE SANTO DOMINGO", styles["CoverSub"])]], colWidths=[6.9 * inch], style=TableStyle([("BACKGROUND", (0, 0), (-1, -1), NAVY), ("LEFTPADDING", (0, 0), (-1, -1), 18), ("RIGHTPADDING", (0, 0), (-1, -1), 18), ("TOPPADDING", (0, 0), (-1, -1), 13), ("BOTTOMPADDING", (0, 0), (-1, -1), 13)])),
+        Spacer(1, 0.75 * inch),
+        p("INF-8239 Ciencia de Datos II", styles["Heading2"]),
+        Spacer(1, 0.15 * inch),
+        p("Trabajo final", styles["CoverTitle"]),
+        Table([[p("DÍGITOS MANUSCRITOS ROBUSTOS", styles["CoverTitle"])]], colWidths=[6.9 * inch], style=TableStyle([("BACKGROUND", (0, 0), (-1, -1), BLUE), ("LEFTPADDING", (0, 0), (-1, -1), 18), ("RIGHTPADDING", (0, 0), (-1, -1), 18), ("TOPPADDING", (0, 0), (-1, -1), 16), ("BOTTOMPADDING", (0, 0), (-1, -1), 16)])),
+        Spacer(1, 0.35 * inch),
+        p("Modalidad A - Proyecto aplicado de ciencia de datos", styles["CoverSub"]),
+        Spacer(1, 0.7 * inch),
+        p("Autor: Edwin Ramón José Nolasco", styles["BodyJust"]),
+        p("Código del tema: TF.19", styles["BodyJust"]),
+        p("Área: Visión por computadora", styles["BodyJust"]),
+        Spacer(1, 0.6 * inch),
+        p("Santo Domingo, República Dominicana", styles["BodyJust"]),
+        p("Versión reproducible v0.1.0", styles["Small"]),
+        PageBreak(),
+    ])
+
+    story.extend([
+        p("Resumen", styles["Section"]),
+        p("Este proyecto compara un baseline de centroides con una CNN pequeña para clasificar dígitos manuscritos de MNIST y estudiar el efecto de ruido gaussiano, rotación y su combinación. La CNN obtuvo 98.17% de accuracy en imágenes limpias y 94.84% bajo la combinación de perturbaciones, frente a 82.03% y 71.55% del baseline, respectivamente. La conclusión accionable es usar la CNN dentro del dominio evaluado, manteniendo la advertencia de que MNIST no representa por sí solo documentos manuscritos reales.", styles["BodyJust"]),
+        p("Contenido del informe", styles["Section"]),
+        Table([["1. Introducción y problema", "3"], ["2. Objetivos", "3"], ["3. Datos y preparación", "4"], ["4. Metodología e implementación", "4"], ["5. Resultados", "5"], ["6. Limitaciones y uso responsable", "6"], ["7. Conclusiones", "6"]], colWidths=[5.8 * inch, 0.6 * inch], style=TableStyle([("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#C8D2DC")), ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BLUE), ("ALIGN", (1, 0), (1, -1), "RIGHT"), ("FONTNAME", (0, 0), (-1, -1), "Helvetica"), ("FONTSIZE", (0, 0), (-1, -1), 9), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7F9FB")])])),
         Spacer(1, 12),
-        Paragraph(
-            "Este documento registra los resultados reproducibles del proyecto individual en modalidad A, ejecutado sobre MNIST con 60,000 imágenes de entrenamiento, 10,000 de prueba, semilla 8239 y dos épocas de entrenamiento para la CNN.",
-            styles["BodyText"],
-        ),
+        p("Palabras clave: visión por computadora, MNIST, CNN, robustez, ruido, rotación, reproducibilidad.", styles["Small"]),
+        PageBreak(),
+    ])
+
+    story.extend([
+        p("1. Introducción y problema", styles["Section"]),
+        p("La clasificación de dígitos manuscritos es un problema controlado de visión por computadora que permite estudiar la relación entre representación visual, capacidad predictiva y robustez. El riesgo metodológico central de este trabajo es confundir un buen resultado en imágenes limpias con un modelo resistente a cambios de captura.", styles["BodyJust"]),
+        p("La pregunta de investigación es: ¿hasta qué punto una CNN pequeña mejora a un baseline al clasificar dígitos manuscritos con ruido gaussiano, rotación o ambas perturbaciones, manteniendo una latencia adecuada para una demostración local?", styles["Callout"]),
+        p("2. Objetivos", styles["Section"]),
+        p("Objetivo general", styles["Subsection"]),
+        p("Comparar un baseline reproducible con una CNN pequeña para determinar cuál ofrece mejor equilibrio entre accuracy, robustez y latencia en MNIST.", styles["BodyJust"]),
+        p("Objetivos específicos", styles["Subsection"]),
+        p("1. Definir un contrato de entrada para imágenes 28x28 en escala de grises. 2. Entrenar y evaluar ambos modelos con una semilla registrada. 3. Medir el desempeño en imágenes limpias, con ruido, con rotación y con ambas perturbaciones. 4. Documentar limitaciones, pruebas y una conclusión accionable.", styles["BodyJust"]),
+        p("3. Datos y preparación", styles["Section"]),
+        p("Se utilizó MNIST, descargado mediante el mecanismo de Keras y conservado localmente en una caché excluida del repositorio. La partición oficial contiene 60,000 imágenes de entrenamiento y 10,000 de prueba. Las imágenes se convierten a flotantes, se normalizan al rango [0, 1] y se representan con un canal explícito.", styles["BodyJust"]),
+        p("Las perturbaciones se aplican únicamente al conjunto de prueba ya separado: ruido gaussiano con desviación estándar 0.20, rotación de 15 grados y la composición de ambos escenarios. Esto evita mezclar artificialmente escenarios de evaluación con el entrenamiento.", styles["BodyJust"]),
+        PageBreak(),
+    ])
+
+    story.extend([
+        p("4. Metodología e implementación", styles["Section"]),
+        p("El baseline calcula un centroide por clase a partir de los píxeles aplanados y asigna cada imagen a la clase con menor distancia media cuadrática. La CNN utiliza dos capas convolucionales pequeñas, pooling, una capa densa y una salida softmax de diez clases. Se entrenó con Adam, batch de 128 y dos épocas.", styles["BodyJust"]),
+        p("La semilla experimental fue 8239. El flujo se ejecuta desde scripts/run_experiment.py, registra la versión de Python, plataforma, TensorFlow, tamaño de las particiones, métricas y latencia en output/results/metrics.json. El repositorio reproducible se encuentra en GitHub.", styles["BodyJust"]),
+        p("5. Resultados", styles["Section"]),
+        p(f"La ejecución se realizó con Python {escape(meta['python'].split()[0])}, TensorFlow {escape(meta['tensorflow'])}, {meta['train_samples']:,} muestras de entrenamiento y {meta['test_samples']:,} muestras de prueba.", styles["BodyJust"]),
+    ])
+    result_rows = [["Modelo", "Limpio", "Ruido", "Rotación", "Ruido + rotación", "ms/muestra"], ["Baseline centroides", f"{baseline['clean']:.2%}", f"{baseline['gaussian_noise']:.2%}", f"{baseline['rotation']:.2%}", f"{baseline['noise_and_rotation']:.2%}", f"{baseline['latency_ms_per_sample']:.3f}"], ["CNN pequeña", f"{cnn['clean']:.2%}", f"{cnn['gaussian_noise']:.2%}", f"{cnn['rotation']:.2%}", f"{cnn['noise_and_rotation']:.2%}", f"{cnn['latency_ms_per_sample']:.3f}"]]
+    story.extend([
+        Table(result_rows, colWidths=[1.35 * inch, 0.72 * inch, 0.72 * inch, 0.72 * inch, 1.05 * inch, 0.85 * inch], style=TableStyle([("BACKGROUND", (0, 0), (-1, 0), NAVY), ("TEXTCOLOR", (0, 0), (-1, 0), colors.white), ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#B9C7D3")), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, LIGHT_BLUE]), ("ALIGN", (1, 1), (-1, -1), "RIGHT"), ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"), ("FONTSIZE", (0, 0), (-1, -1), 8)])),
         Spacer(1, 10),
-        Paragraph("1. Alcance aprobado", styles["Heading2"]),
-        Paragraph(
-            "Se implementará un baseline, una CNN pequeña, perturbaciones de ruido gaussiano y rotación, y evaluación mediante accuracy, robustez y latencia. El dataset previsto es MNIST, sujeto a verificación de versión, licencia, cobertura y limitaciones.",
-            styles["BodyText"],
-        ),
-        Spacer(1, 10),
-        Paragraph("2. Evidencia de validación actual", styles["Heading2"]),
-    ]
-    table = Table(
-        [
-            ["Componente", "Resultado"],
-            ["Pruebas automatizadas", "6 de 6 aprobadas"],
-            ["Baseline limpio", f"{metrics['models']['baseline_centroid']['clean']:.2%}" if metrics else "Pendiente"],
-            ["CNN limpia", f"{metrics['models']['cnn_small']['clean']:.2%}" if metrics else "Pendiente"],
-            ["Baseline: ruido + rotación", f"{metrics['models']['baseline_centroid']['noise_and_rotation']:.2%}" if metrics else "Pendiente"],
-            ["CNN: ruido + rotación", f"{metrics['models']['cnn_small']['noise_and_rotation']:.2%}" if metrics else "Pendiente"],
-            ["Latencia baseline / CNN", f"{metrics['models']['baseline_centroid']['latency_ms_per_sample']:.3f} / {metrics['models']['cnn_small']['latency_ms_per_sample']:.3f} ms/muestra" if metrics else "Pendiente"],
-            ["Repositorio Git", "Publicado en GitHub"],
-        ],
-        colWidths=[2.2 * inch, 4.4 * inch],
-    )
-    table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#183B56")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#B8C4CE")),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#EEF4F7")]),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 9),
-                ("LEADING", (0, 0), (-1, -1), 12),
-                ("LEFTPADDING", (0, 0), (-1, -1), 7),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 7),
-            ]
-        )
-    )
-    story.extend([table, Spacer(1, 12)])
-    story.extend(
-        [
-            Paragraph("3. Interpretación", styles["Heading2"]),
-            Paragraph(
-                "La CNN supera al baseline en datos limpios (98.17% frente a 82.03%) y conserva mejor desempeño bajo la combinación de perturbaciones (94.84% frente a 71.55%). La caída de la CNN en ese escenario es de 3.33 puntos porcentuales; por tanto, dentro de las perturbaciones evaluadas, la CNN es la opción recomendada. Esta conclusión no se extiende a otros tipos de ruido, resoluciones o dominios documentales.",
-                styles["BodyText"],
-            ),
-            Spacer(1, 10),
-            Paragraph("4. Limitaciones y siguiente mejora", styles["Heading2"]),
-            Paragraph(
-                "MNIST no representa toda la variabilidad de escritura manuscrita real. Las perturbaciones son controladas y la latencia depende del hardware. La siguiente mejora debe incorporar análisis de errores por clase y una validación con imágenes externas antes de usar el modelo fuera de este experimento.",
-                styles["BodyText"],
-            ),
-            Spacer(1, 18),
-            Paragraph(
-                "Repositorio GitHub: https://github.com/vmperez997-max/Trabajo-final",
-                styles["Small"],
-            ),
-            Spacer(1, 8),
-            Paragraph(
-                "Generado automáticamente desde la base reproducible del proyecto.",
-                styles["Small"],
-            ),
-        ]
-    )
-    document.build(story)
+        p("La CNN mejora 15.14 puntos porcentuales sobre el baseline en limpio y 23.29 puntos en la combinación de ruido y rotación. Su caída desde limpio es de 3.33 puntos, mientras que la del baseline es de 10.48 puntos. Esto aporta evidencia a favor de la CNN dentro de los escenarios evaluados, sin justificar generalización fuera de ellos.", styles["Callout"]),
+        p("6. Pruebas y reproducibilidad", styles["Section"]),
+        p("La suite automatizada contiene seis pruebas aprobadas: contrato de imágenes y etiquetas, rechazo de formas incorrectas, reproducibilidad y rango del ruido, preservación de forma en rotación, reporte de escenarios y medición de latencia. El enlace del repositorio es:", styles["BodyJust"]),
+        p(escape(GITHUB), styles["Small"]),
+        PageBreak(),
+    ])
+
+    story.extend([
+        p("7. Análisis de errores y robustez", styles["Section"]),
+        p("El escenario más exigente fue la combinación de ruido y rotación. La CNN alcanzó 94.84%, mientras que el baseline cayó a 71.55%. La diferencia indica que la CNN aprende representaciones espaciales más estables para las perturbaciones controladas. Sin embargo, accuracy agregada no muestra qué clases específicas concentran los errores; por eso se recomienda incorporar una matriz de confusión y revisión visual por clase en una iteración posterior.", styles["BodyJust"]),
+        p("8. Limitaciones y uso responsable", styles["Section"]),
+        p("MNIST no representa toda la variabilidad de escritura manuscrita, perspectiva, iluminación, compresión, tinta, papel o resolución de documentos reales. El ruido gaussiano y la rotación son aproximaciones controladas. La latencia observada depende del CPU y no debe interpretarse como garantía para otro equipo.", styles["BodyJust"]),
+        p("El modelo debe abstenerse de conclusiones fuera del contrato de entrada y no debe utilizarse como OCR documental general sin validación externa. La Model Card y la declaración de uso de IA acompañan el repositorio.", styles["BodyJust"]),
+        p("9. Green AI y trazabilidad", styles["Section"]),
+        p("Se utilizó una CNN pequeña, dos épocas y ejecución en CPU, limitando el costo computacional del experimento. La configuración, semilla, dependencias, métricas y código quedan registrados para facilitar repetición y auditoría.", styles["BodyJust"]),
+        p("10. Conclusiones", styles["Section"]),
+        p("Para el alcance individual de este proyecto, la CNN pequeña es el modelo recomendado: obtuvo mayor accuracy en limpio, menor degradación relativa bajo las perturbaciones evaluadas y una latencia local inferior a 1 ms por muestra. La recomendación se detiene o debe escalarse cuando la imagen no cumpla el contrato, cuando se use un dominio distinto de MNIST o cuando se necesite evidencia de desempeño por clase en datos externos.", styles["Callout"]),
+        p("Referencias", styles["Section"]),
+        p("Yann LeCun, Corinna Cortes y Christopher Burges. MNIST handwritten digit database. http://yann.lecun.com/exdb/mnist/", styles["Small"]),
+        p("TensorFlow Keras. MNIST dataset API. https://www.tensorflow.org/api_docs/python/tf/keras/datasets/mnist", styles["Small"]),
+        p("Repositorio del proyecto. " + escape(GITHUB), styles["Small"]),
+    ])
+
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    document.build(story, onFirstPage=footer, onLaterPages=footer)
     return OUTPUT
 
 
