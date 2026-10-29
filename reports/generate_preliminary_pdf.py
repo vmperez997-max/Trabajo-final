@@ -28,10 +28,10 @@ METRICS = ROOT / "output" / "results" / "metrics.json"
 GITHUB = "https://github.com/vmperez997-max/Trabajo-final"
 REFERENCE_IMAGE = Path(r"C:\Users\Victor\AppData\Roaming\Code\agentSessionData\e7f9c257-a535-4d79-bf33-4e8aa689e087\attachments\6a36ac75-ff6e-4dd4-ab41-a7f83a0071e2\Pasted Image.png")
 
-NAVY = colors.HexColor("#163A5F")
-BLUE = colors.HexColor("#2F6690")
-LIGHT_BLUE = colors.HexColor("#EAF2F8")
-GRAY = colors.HexColor("#5B6573")
+NAVY = colors.black
+BLUE = colors.black
+LIGHT_BLUE = colors.HexColor("#F2F2F2")
+GRAY = colors.HexColor("#333333")
 
 
 def footer(canvas, document) -> None:
@@ -39,7 +39,7 @@ def footer(canvas, document) -> None:
     if document.page > 1:
         canvas.setStrokeColor(colors.HexColor("#D6DEE5"))
         canvas.line(document.leftMargin, 0.58 * inch, letter[0] - document.rightMargin, 0.58 * inch)
-        canvas.setFont("Helvetica", 8)
+        canvas.setFont("Times-Roman", 9)
         canvas.setFillColor(GRAY)
         canvas.drawString(document.leftMargin, 0.38 * inch, "INF-8239 | Dígitos manuscritos robustos")
         canvas.drawRightString(letter[0] - document.rightMargin, 0.38 * inch, f"Página {document.page}")
@@ -71,13 +71,13 @@ def build_pdf() -> Path:
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name="CoverTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=25, leading=31, textColor=colors.white, alignment=TA_CENTER, spaceAfter=18))
     styles.add(ParagraphStyle(name="CoverSub", parent=styles["Normal"], fontSize=13, leading=18, textColor=colors.white, alignment=TA_CENTER))
-    styles.add(ParagraphStyle(name="CoverBlack", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=13, leading=15, textColor=colors.black, alignment=TA_CENTER, spaceAfter=2))
-    styles.add(ParagraphStyle(name="CoverSmallBlack", parent=styles["Normal"], fontName="Helvetica", fontSize=8.5, leading=10, textColor=colors.black, alignment=TA_CENTER, spaceAfter=1))
-    styles.add(ParagraphStyle(name="Section", parent=styles["Heading1"], fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=NAVY, spaceBefore=8, spaceAfter=9))
-    styles.add(ParagraphStyle(name="Subsection", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=11, leading=14, textColor=BLUE, spaceBefore=7, spaceAfter=5))
-    styles.add(ParagraphStyle(name="BodyJust", parent=styles["BodyText"], fontName="Helvetica", fontSize=9.5, leading=14, alignment=TA_JUSTIFY, spaceAfter=7))
-    styles.add(ParagraphStyle(name="Small", parent=styles["BodyText"], fontSize=8.5, leading=11, textColor=GRAY))
-    styles.add(ParagraphStyle(name="Callout", parent=styles["BodyText"], fontSize=10, leading=14, textColor=NAVY, backColor=LIGHT_BLUE, borderColor=colors.HexColor("#B7D1E5"), borderWidth=0.5, borderPadding=9, spaceBefore=5, spaceAfter=10))
+    styles.add(ParagraphStyle(name="CoverBlack", parent=styles["Normal"], fontName="Times-Bold", fontSize=13, leading=15, textColor=colors.black, alignment=TA_CENTER, spaceAfter=2))
+    styles.add(ParagraphStyle(name="CoverSmallBlack", parent=styles["Normal"], fontName="Times-Roman", fontSize=9, leading=11, textColor=colors.black, alignment=TA_CENTER, spaceAfter=1))
+    styles.add(ParagraphStyle(name="Section", parent=styles["Heading1"], fontName="Times-Bold", fontSize=14, leading=18, textColor=NAVY, spaceBefore=8, spaceAfter=9))
+    styles.add(ParagraphStyle(name="Subsection", parent=styles["Heading2"], fontName="Times-Bold", fontSize=12, leading=14, textColor=BLUE, spaceBefore=7, spaceAfter=5))
+    styles.add(ParagraphStyle(name="BodyJust", parent=styles["BodyText"], fontName="Times-Roman", fontSize=11, leading=16, alignment=TA_JUSTIFY, spaceAfter=8))
+    styles.add(ParagraphStyle(name="Small", parent=styles["BodyText"], fontName="Times-Roman", fontSize=9.5, leading=12, textColor=GRAY))
+    styles.add(ParagraphStyle(name="Callout", parent=styles["BodyText"], fontName="Times-Roman", fontSize=11, leading=16, textColor=colors.black, backColor=colors.white, borderColor=colors.white, borderWidth=0, borderPadding=0, spaceBefore=5, spaceAfter=10))
 
     document = SimpleDocTemplate(str(OUTPUT), pagesize=letter, rightMargin=0.72 * inch, leftMargin=0.72 * inch, topMargin=0.72 * inch, bottomMargin=0.78 * inch)
     story = []
