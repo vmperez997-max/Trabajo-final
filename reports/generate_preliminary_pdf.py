@@ -130,7 +130,6 @@ def build_pdf() -> Path:
         p("3. Datos y preparación", styles["Section"]),
         p("Se utilizó MNIST, descargado mediante el mecanismo de Keras y conservado localmente en una caché excluida del repositorio. La partición oficial contiene 60,000 imágenes de entrenamiento y 10,000 de prueba. Las imágenes se convierten a flotantes, se normalizan al rango [0, 1] y se representan con un canal explícito.", styles["BodyJust"]),
         p("Las perturbaciones se aplican únicamente al conjunto de prueba ya separado: ruido gaussiano con desviación estándar 0.20, rotación de 15 grados y la composición de ambos escenarios. Esto evita mezclar artificialmente escenarios de evaluación con el entrenamiento.", styles["BodyJust"]),
-        PageBreak(),
     ])
 
     story.extend([
