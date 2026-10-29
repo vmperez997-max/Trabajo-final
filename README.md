@@ -41,6 +41,14 @@ La CNN requiere instalar el extra compatible con el entorno disponible:
 python -m pip install -e ".[cnn]"
 ```
 
+## Ejecución del experimento
+
+```powershell
+python scripts/run_experiment.py --epochs 2
+```
+
+El script descarga MNIST mediante Keras, entrena el baseline y la CNN, evalúa datos limpios, ruido, rotación y la combinación de perturbaciones, y guarda métricas en `output/results/metrics.json`.
+
 ## Validación
 
 ```powershell

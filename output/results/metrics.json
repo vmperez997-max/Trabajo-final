@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "python": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "seed": 8239,
+    "epochs": 2,
+    "train_samples": 60000,
+    "test_samples": 10000,
+    "tensorflow": "2.22.0-rc0"
+  },
+  "models": {
+    "baseline_centroid": {
+      "clean": 0.8203,
+      "gaussian_noise": 0.8245,
+      "rotation": 0.7241,
+      "noise_and_rotation": 0.7155,
+      "latency_ms_per_sample": 0.020884300000034273
+    },
+    "cnn_small": {
+      "clean": 0.9817,
+      "gaussian_noise": 0.9697,
+      "rotation": 0.9595,
+      "noise_and_rotation": 0.9484,
+      "latency_ms_per_sample": 0.3520335937423624
+    }
+  },
+  "cnn_history": {
+    "accuracy": [
+      0.9229629635810852,
+      0.9763888716697693
+    ],
+    "loss": [
+      0.25806111097335815,
+      0.07552170753479004
+    ],
+    "val_accuracy": [
+      0.9794999957084656,
+      0.98416668176651
+    ],
+    "val_loss": [
+      0.08013495057821274,
+      0.06043197587132454
+    ]
+  },
+  "robustness_drop_from_clean": {
+    "baseline_centroid": {
+      "gaussian_noise": -0.0041999999999999815,
+      "rotation": 0.09620000000000006,
+      "noise_and_rotation": 0.1048
+    },
+    "cnn_small": {
+      "gaussian_noise": 0.01200000000000001,
+      "rotation": 0.022199999999999998,
+      "noise_and_rotation": 0.033299999999999996
+    }
+  },
+  "demo_sample": {
+    "index": 0,
+    "true_label": 7,
+    "cnn_prediction": 7
+  }
+}

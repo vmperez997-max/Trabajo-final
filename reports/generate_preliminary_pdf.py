@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
@@ -10,10 +11,12 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "pdf" / "resultados_preliminares.pdf"
+METRICS = ROOT / "output" / "results" / "metrics.json"
 
 
 def build_pdf() -> Path:
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    metrics = json.loads(METRICS.read_text(encoding="utf-8")) if METRICS.exists() else None
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name="TitleCenter", parent=styles["Title"], alignment=TA_CENTER))
     styles.add(ParagraphStyle(name="Small", parent=styles["BodyText"], fontSize=9, leading=12))
@@ -22,10 +25,10 @@ def build_pdf() -> Path:
     )
     story = [
         Paragraph("Dígitos manuscritos robustos", styles["TitleCenter"]),
-        Paragraph("Resultados preliminares - INF-8239 Ciencia de Datos II", styles["Heading2"]),
+        Paragraph("Resultados experimentales - INF-8239 Ciencia de Datos II", styles["Heading2"]),
         Spacer(1, 12),
         Paragraph(
-            "Este documento registra el estado verificable de la base reproducible del proyecto individual en modalidad A. No contiene métricas de entrenamiento de MNIST ni de la CNN, porque esas ejecuciones aún no se han realizado.",
+            "Este documento registra los resultados reproducibles del proyecto individual en modalidad A, ejecutado sobre MNIST con 60,000 imágenes de entrenamiento, 10,000 de prueba, semilla 8239 y dos épocas de entrenamiento para la CNN.",
             styles["BodyText"],
         ),
         Spacer(1, 10),
@@ -41,11 +44,12 @@ def build_pdf() -> Path:
         [
             ["Componente", "Resultado"],
             ["Pruebas automatizadas", "6 de 6 aprobadas"],
-            ["Diagnóstico del editor", "Sin errores reportados"],
-            ["Contrato de imágenes", "28x28, flotantes, rango [0, 1]"],
-            ["Perturbaciones", "Ruido reproducible y rotación con forma preservada"],
-            ["Repositorio Git", "Pendiente de inicialización/publicación"],
-            ["CNN y MNIST", "Pendientes de ejecución por compatibilidad de TensorFlow"],
+            ["Baseline limpio", f"{metrics['models']['baseline_centroid']['clean']:.2%}" if metrics else "Pendiente"],
+            ["CNN limpia", f"{metrics['models']['cnn_small']['clean']:.2%}" if metrics else "Pendiente"],
+            ["Baseline: ruido + rotación", f"{metrics['models']['baseline_centroid']['noise_and_rotation']:.2%}" if metrics else "Pendiente"],
+            ["CNN: ruido + rotación", f"{metrics['models']['cnn_small']['noise_and_rotation']:.2%}" if metrics else "Pendiente"],
+            ["Latencia baseline / CNN", f"{metrics['models']['baseline_centroid']['latency_ms_per_sample']:.3f} / {metrics['models']['cnn_small']['latency_ms_per_sample']:.3f} ms/muestra" if metrics else "Pendiente"],
+            ["Repositorio Git", "Publicado en GitHub"],
         ],
         colWidths=[2.2 * inch, 4.4 * inch],
     )
@@ -70,13 +74,13 @@ def build_pdf() -> Path:
         [
             Paragraph("3. Interpretación", styles["Heading2"]),
             Paragraph(
-                "La evidencia actual demuestra que el contrato de entrada, las transformaciones controladas, la medición de latencia y la suite de seis pruebas funcionan en el entorno seleccionado. No permite concluir todavía qué modelo clasifica mejor ni qué tan robusto es frente a ruido o rotación.",
+                "La CNN supera al baseline en datos limpios (98.17% frente a 82.03%) y conserva mejor desempeño bajo la combinación de perturbaciones (94.84% frente a 71.55%). La caída de la CNN en ese escenario es de 3.33 puntos porcentuales; por tanto, dentro de las perturbaciones evaluadas, la CNN es la opción recomendada. Esta conclusión no se extiende a otros tipos de ruido, resoluciones o dominios documentales.",
                 styles["BodyText"],
             ),
             Spacer(1, 10),
-            Paragraph("4. Próximos resultados requeridos", styles["Heading2"]),
+            Paragraph("4. Limitaciones y siguiente mejora", styles["Heading2"]),
             Paragraph(
-                "Cargar MNIST, entrenar el baseline y la CNN con semilla registrada, evaluar el conjunto limpio y tres escenarios perturbados, medir latencia, analizar errores y actualizar este informe con tablas y conclusiones delimitadas.",
+                "MNIST no representa toda la variabilidad de escritura manuscrita real. Las perturbaciones son controladas y la latencia depende del hardware. La siguiente mejora debe incorporar análisis de errores por clase y una validación con imágenes externas antes de usar el modelo fuera de este experimento.",
                 styles["BodyText"],
             ),
             Spacer(1, 18),

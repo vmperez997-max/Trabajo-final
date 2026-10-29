@@ -1,3 +1,7 @@
 # Scripts
 
-Aquí se incorporará el ejecutable de entrenamiento y evaluación cuando se verifique la disponibilidad de MNIST y la compatibilidad de la dependencia CNN con el entorno seleccionado. Los scripts deberán recibir configuración explícita y guardar metadatos junto con los resultados.
+`run_experiment.py` entrena y evalúa el baseline y la CNN, guarda métricas y registra una predicción de demostración sobre la primera muestra del conjunto de prueba. El flujo completo se ejecuta con:
+
+```powershell
+python scripts/run_experiment.py --epochs 2
+```

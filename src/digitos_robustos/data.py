@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -17,6 +19,20 @@ def _prepare_images(images: Any) -> np.ndarray:
 
 def load_mnist() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Carga MNIST desde Keras y devuelve train/test con forma de canal explícita."""
+    cache_dir = Path(__file__).resolve().parents[2] / "data" / "keras"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("KERAS_HOME", str(cache_dir))
+    local_archive = cache_dir / "datasets" / "mnist.npz"
+    if local_archive.exists():
+        with np.load(local_archive) as archive:
+            x_train, y_train = archive["x_train"], archive["y_train"]
+            x_test, y_test = archive["x_test"], archive["y_test"]
+        return (
+            _prepare_images(x_train),
+            np.asarray(y_train, dtype=np.int64),
+            _prepare_images(x_test),
+            np.asarray(y_test, dtype=np.int64),
+        )
     try:
         from tensorflow.keras.datasets import mnist
     except ImportError as exc:
