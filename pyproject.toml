@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "digitos-manuscritos-robustos"
+version = "0.1.0"
+description = "Comparación reproducible entre baseline y CNN pequeña para dígitos manuscritos robustos."
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "pillow>=10.0",
+]
+
+[project.optional-dependencies]
+dev = []
+cnn = ["tensorflow>=2.16"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -1,0 +1,11 @@
+[experiment]
+seed = 8239
+image_height = 28
+image_width = 28
+num_classes = 10
+noise_std = 0.20
+rotation_degrees = 15.0
+
+[evaluation]
+max_latency_samples = 128
+batch_size = 128
